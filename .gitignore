@@ -31,3 +31,6 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Own ignores ###
+src/main/resources/static/video.mp4
