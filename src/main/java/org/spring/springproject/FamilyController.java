@@ -4,6 +4,7 @@ import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.apache.coyote.Response;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -52,14 +53,16 @@ public class FamilyController {
         return familyList.stream().filter(family -> family.getFamilyName().equals(familyName)).findFirst().orElseThrow();
     }
 
-    @RequestMapping(value = "/create", method = RequestMethod.POST)
-    public void createFamily(@RequestBody Family family, HttpServletResponse response) throws IOException {
-        if(family.getFamilyName() != null && !family.getMembers().isEmpty()){
-            familyList.add(family);
-            response.sendError(HttpServletResponse.SC_OK, "The family has been added to the list");
-            return;
+    @RequestMapping(value = "/create", method = RequestMethod.POST, produces = "application/json")
+    public ResponseEntity<String> createFamily(@RequestBody Family family) {
+        if (family.getFamilyName() == null || family.getFamilyName().isEmpty()) {
+            throw new FamilyLengthException("Family name missing");
         }
-        response.sendError(HttpServletResponse.SC_CONFLICT, "Family name cannot be null and must contain at least one member");
+        if (family.getFamilyName().length() < 2) {
+            throw new FamilyLengthException("Family name too short");
+        }
+        familyList.add(family);
+        return new ResponseEntity<> ("Family added to the list", HttpStatus.OK);
     }
 
     @RequestMapping(value = "/edit/{id}", method = RequestMethod.PATCH, consumes = "application/json")
