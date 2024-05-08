@@ -4,7 +4,7 @@ import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.apache.coyote.Response;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -29,6 +29,11 @@ public class FamilyController {
 
     List<Family> familyList = new ArrayList<>();
     List<Member> members = new ArrayList<>();
+    FamilyRepository familyRepository;
+
+    public FamilyController(FamilyRepository familyRepository) {
+        this.familyRepository = familyRepository;
+    }
 
     @PostConstruct
     public void loadFamily() {
@@ -37,6 +42,22 @@ public class FamilyController {
         members.add(new Member("Roman", 24, "male"));
         familyList.add(new Family(UUID.randomUUID().toString(), "Kowalski", members));
         familyList.add(new Family(UUID.randomUUID().toString(), "Nowak", members));
+    }
+
+    @GetMapping("createFamilyDB")
+    public void createFamilyDB() {
+        FamilyDB familyDB = new FamilyDB(13, "Mostowiak", "Polska", null);
+        familyRepository.save(familyDB);
+    }
+
+    @GetMapping("getFamilyDB")
+    public List<FamilyDB> getFamilyDB() {
+        return familyRepository.findByName("Mostowiak", "Polska");
+    }
+
+    @GetMapping("removeFamilyDB")
+    public void removeFamilyDB() {
+        familyRepository.deleteById(5L);
     }
 
     @RequestMapping(value = "/getall", method = RequestMethod.GET)
